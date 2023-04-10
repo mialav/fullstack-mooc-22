@@ -1,43 +1,8 @@
 import { useState, useEffect } from "react";
 import contactService from "./services/phonebook";
-
-const Person = ({ person }) => {
-  return (
-    <div>
-      {person.name} {person.number}
-    </div>
-  );
-};
-
-const NumberForm = ({
-  addName,
-  newName,
-  handleNameChange,
-  newNumber,
-  handleNumberChange,
-}) => {
-  return (
-    <form onSubmit={addName}>
-      <div>
-        name: <input value={newName} onChange={handleNameChange} />
-      </div>
-      <div>
-        number: <input value={newNumber} onChange={handleNumberChange} />
-      </div>
-      <div>
-        <button type="submit">add</button>
-      </div>
-    </form>
-  );
-};
-
-const NameFilter = ({ filterValue, handleFilter }) => {
-  return (
-    <div>
-      filter shown with <input value={filterValue} onChange={handleFilter} />
-    </div>
-  );
-};
+import { Person } from "./components/Person";
+import { NumberForm } from "./components/NumberForm";
+import { NameFilter } from "./components/NameFilter";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -78,6 +43,13 @@ const App = () => {
     setNewNumber("");
   };
 
+  const removeName = (person) => {
+    window.confirm(`Delete ${person.name}?`);
+    contactService.remove(person.id).then((returnedPerson) => {
+      setPersons(persons.filter((el) => el.id !== person.id));
+    });
+  };
+
   const personsToShow = (persons, filterValue) => {
     if (filterValue === "") {
       return persons;
@@ -103,7 +75,11 @@ const App = () => {
       <h2>Numbers</h2>
       <div>
         {personsToShow(persons, filterValue).map((person) => (
-          <Person person={person} key={person.name} />
+          <Person
+            person={person}
+            key={person.name}
+            removePerson={() => removeName(person)}
+          />
         ))}
       </div>
     </div>
