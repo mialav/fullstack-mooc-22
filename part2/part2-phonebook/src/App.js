@@ -31,7 +31,20 @@ const App = () => {
   const addName = (event) => {
     event.preventDefault();
     if (persons.find((person) => person.name === newName)) {
-      alert(`${newName} is already in the phonebook`);
+      if (
+        window.confirm(
+          `${newName} is already in the phonebook, replace old number with a new one?`
+        )
+      ) {
+        const person = persons.find((person) => person.name === newName);
+        contactService
+          .update(person.id, { ...person, number: newNumber })
+          .then((returnedPerson) => {
+            setPersons(
+              persons.map((el) => (el.id !== person.id ? el : returnedPerson))
+            );
+          });
+      }
     } else {
       contactService
         .create({ name: newName, number: newNumber })
@@ -44,10 +57,11 @@ const App = () => {
   };
 
   const removeName = (person) => {
-    window.confirm(`Delete ${person.name}?`);
-    contactService.remove(person.id).then((returnedPerson) => {
-      setPersons(persons.filter((el) => el.id !== person.id));
-    });
+    if (window.confirm(`Delete ${person.name}?`)) {
+      contactService.remove(person.id).then((returnedPerson) => {
+        setPersons(persons.filter((el) => el.id !== person.id));
+      });
+    }
   };
 
   const personsToShow = (persons, filterValue) => {
