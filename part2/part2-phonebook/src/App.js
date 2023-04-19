@@ -3,12 +3,15 @@ import contactService from "./services/phonebook";
 import { Person } from "./components/Person";
 import { NumberForm } from "./components/NumberForm";
 import { NameFilter } from "./components/NameFilter";
+import { Notification } from "./components/Notification";
+import "./index.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filterValue, setFilterValue] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState(null);
 
   useEffect(() => {
     contactService.getAll().then((initialNotes) => {
@@ -40,6 +43,10 @@ const App = () => {
         contactService
           .update(person.id, { ...person, number: newNumber })
           .then((returnedPerson) => {
+            setNotificationMessage(`Updated ${newName}`);
+            setTimeout(() => {
+              setNotificationMessage(null);
+            }, 5000);
             setPersons(
               persons.map((el) => (el.id !== person.id ? el : returnedPerson))
             );
@@ -49,6 +56,12 @@ const App = () => {
       contactService
         .create({ name: newName, number: newNumber })
         .then((returnedPerson) => {
+          setNotificationMessage(
+            `Added ${newName}`
+          );
+          setTimeout(() => {
+            setNotificationMessage(null);
+          }, 5000);
           setPersons(persons.concat(returnedPerson));
         });
     }
@@ -58,9 +71,20 @@ const App = () => {
 
   const removeName = (person) => {
     if (window.confirm(`Delete ${person.name}?`)) {
-      contactService.remove(person.id).then((returnedPerson) => {
-        setPersons(persons.filter((el) => el.id !== person.id));
-      });
+      contactService
+        .remove(person.id)
+        .then((returnedPerson) => {
+          setPersons(persons.filter((el) => el.id !== person.id));
+        })
+        .catch((error) => {
+          setNotificationMessage(
+            `Information of ${person.name} has already been removed from the server`
+          );
+          setTimeout(() => {
+            setNotificationMessage(null);
+          }, 5000);
+          setPersons(persons.filter((n) => n.id !== person.id));
+        });;
     }
   };
 
@@ -77,6 +101,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notificationMessage} />
       <NameFilter filterValue={filterValue} handleFilter={handleFilter} />
       <h2>Add new number</h2>
       <NumberForm
