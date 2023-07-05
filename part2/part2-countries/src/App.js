@@ -7,7 +7,7 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
-  const [country, setCountry] = useState("");
+  const [showCountry, setShowCountry] = useState(false);
 
   useEffect(() => {
     countryService.getAll().then((initialCountries) => {
@@ -27,7 +27,9 @@ const App = () => {
     setSearchQuery(event.target.value);
   };
 
-  // const countriesToShow = showAll ? countries : countries.filter((country) => country.important);
+  const handleShowCountry = (country) => {
+    setSearchQuery(country);
+  };
 
   return (
     <div>
@@ -39,7 +41,11 @@ const App = () => {
         ) : filteredCountries.length > 1 ? (
           <div>
             {filteredCountries.map((country) => (
-              <CountryListItem key={country.name.common} country={country} />
+              <CountryListItem
+                key={country.name.common}
+                country={country}
+                showCountry={() => handleShowCountry(country.name.common)}
+              />
             ))}
           </div>
         ) : filteredCountries.length === 1 ? (
