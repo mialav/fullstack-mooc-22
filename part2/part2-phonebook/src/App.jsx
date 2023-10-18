@@ -12,6 +12,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [filterValue, setFilterValue] = useState("");
   const [notificationMessage, setNotificationMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     contactService.getAll().then((initialNotes) => {
@@ -50,19 +51,29 @@ const App = () => {
             setPersons(
               persons.map((el) => (el.id !== person.id ? el : returnedPerson))
             );
+          })
+          .catch((error) => {
+            setErrorMessage(error.response.data.error);
+            setTimeout(() => {
+              setErrorMessage(null);
+            }, 5000);
           });
       }
     } else {
       contactService
         .create({ name: newName, number: newNumber })
         .then((returnedPerson) => {
-          setNotificationMessage(
-            `Added ${newName}`
-          );
+          setNotificationMessage(`Added ${newName}`);
           setTimeout(() => {
             setNotificationMessage(null);
           }, 5000);
           setPersons(persons.concat(returnedPerson));
+        })
+        .catch((error) => {
+          setErrorMessage(error.response.data.error);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
         });
     }
     setNewName("");
@@ -77,14 +88,14 @@ const App = () => {
           setPersons(persons.filter((el) => el.id !== person.id));
         })
         .catch((error) => {
-          setNotificationMessage(
+          setErrorMessage(
             `Information of ${person.name} has already been removed from the server`
           );
           setTimeout(() => {
-            setNotificationMessage(null);
+            setErrorMessage(null);
           }, 5000);
           setPersons(persons.filter((n) => n.id !== person.id));
-        });;
+        });
     }
   };
 
@@ -101,7 +112,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Notification message={notificationMessage} />
+      <Notification message={notificationMessage} errorMessage={errorMessage} />
       <NameFilter filterValue={filterValue} handleFilter={handleFilter} />
       <h2>Add new number</h2>
       <NumberForm
